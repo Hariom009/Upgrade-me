@@ -10,59 +10,63 @@ import SwiftUI
 struct EnterNameView: View {
     @State private var personname: String = ""
     @State private var movetoHabit: Bool = false
+    @State private var isAnimating = true
     var body: some View {
         NavigationStack{
             ZStack{
-                Color(red: 90/255, green: 94/255, blue: 220/255)
-                .ignoresSafeArea()
+               // Color(red: 90/255, green: 94/255, blue: 220/255)
+                //.ignoresSafeArea()
                 
-                VStack{
-                    Text("Build healthy habits with us.")
-                        .foregroundStyle(.white)
-                        .font(.system(size: 28, weight: .heavy))
+                VStack(spacing: 12){
+                    
+
+//                    Image("GuestViewImage")
+//                        .resizable()
+//                       .frame(width: 250, height: 250)
+//                        .scaledToFit()
+//                        .padding(.bottom,88)
+                  ImageViewForIntro()
+                        .padding()
+                    
+                    Text("Track Your Habit and Set Goals")
+                        .foregroundStyle(.black)
+                        .font(.system(size: 25, weight: .heavy))
                         .frame(width: 200,height: 200)
                         .padding()
-                    Image("GuestViewImage")
-                        .resizable()
-                       .frame(width: 250, height: 250)
-                        .scaledToFit()
-                        .padding(.bottom,88)
 
                     FooterView
                         .padding()
                     
                 }
+                .padding(.top,20)
             }
         }
     }
     private var FooterView:some View{
         VStack {
             NavigationLink("Get Started"){
-               // HabitListView()
+            HabitListView()
             }
             .padding(.horizontal, 16)
             .frame(maxWidth: 340,minHeight: 60)
-            .background(.white)
+            .background(.green)
             .foregroundStyle(.black)
             .fontWeight(.bold)
             .cornerRadius(12)
             
-            VStack(spacing:1){
-                Text("I have an Account")
-                    .foregroundStyle(.white)
-                Rectangle()
-                    .fill(Color.white)
-                    .frame(width:140,height: 2.5)
-                
-            }
+//            VStack(spacing:1){
+//                Text("Let's Start ")
+//                    .foregroundStyle(.secondary)
+//                
+//            }
             HStack(spacing: 80){
                 Spacer()
                 VStack{
-                    Text("By starting or signing in you agree")
-                        .foregroundStyle(.white)
+                    Text("Keep Smiling and")
+                        .foregroundStyle(.secondary)
                         .font(.caption)
-                    Text("to our Terms of use")
-                        .foregroundStyle(.white)
+                    Text("Stay Consistent")
+                        .foregroundStyle(.secondary)
                         .font(.caption)
                 }
                 Spacer()

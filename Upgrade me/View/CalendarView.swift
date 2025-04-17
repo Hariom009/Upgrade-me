@@ -8,64 +8,35 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @State private var selectedDate: Date = .now
+    @State private var selectedDate: Date = Date()
     private var dateRange:[Date]{
         let calendar = Calendar.current
         let startDate = calendar.date(byAdding: .day, value: -100, to: Date())!
         let endDate = calendar.date(byAdding: .day, value: 30, to: Date())!
+        
         return generateDates(from: startDate, to: endDate)
     }
     
     var body: some View {
+        @State  var selectedDate: Date = Date.now
+      //  let column = Array(repeating: GridItem(.flexible()), count: 7)
+       // let weekdaySymbols = Calendar.current.weekdaySymbols
+        
         NavigationStack{
-            ScrollView(.horizontal, showsIndicators: false) {
-                ZStack{
-                    RoundedRectangle(cornerRadius: 25)
-                        .fill(Color.purple.opacity(0.2)) // Light violet color with 20% opacity
-                        .frame(height: 200) // Adjust the height as needed
-                        .ignoresSafeArea()
+            if selectedDate == .now {
+                Text("Today")
+            }
+                HStack(spacing: 20){
                     
-                    HStack(spacing: 25){
-                        ForEach(dateRange, id: \.self) { date in
-                            VStack {
-                                // Day of the week (e.g., Sun, Mon, etc.)
-                                Text(dateFormatter.shortWeekdaySymbols[Calendar.current.component(.weekday, from: date) - 1])
-                                    .font(.system(size: 13, weight: .bold))
-                                    .foregroundColor(.primary)
-                                
-                                // Date inside a circle
-                                Text("\(Calendar.current.component(.day, from: date))")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .frame(width: 30, height: 30)
-                                    .background(
-                                        Circle()
-                                            .strokeBorder(Color.secondary, lineWidth: 0.5) // secondary color border
-                                            .background(Circle().fill(Color.white)) // white background
-                                    )
-                                    .foregroundColor(isSameDay(date: date)) // Apply the color from isSameDay function
-                                    .overlay(
-                                        Group {
-                                            if isSameDay(date: date) == .black {
-                                                Circle()
-                                                    .stroke(Color.black, lineWidth: 1) // black circle border for today
-                                            }
-                                        }
-                                    )
-                                    .padding(.top, 5) // slight padding between day of the week and date
-                            }
-                        }
-                    }
-                    .padding(.bottom, 20)
+                    Text("Date : ")
+                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
                 }
-            }.scrollIndicators(.hidden)
-               
+                .padding(20)
         }
     }
     func generateDates(from startDate:Date, to endDate:Date) -> [Date]{
         var dates:[Date] = []
         var currentDate = startDate
-        _ = Calendar.current
-        
         while currentDate <= endDate {
             dates.append(currentDate)
             currentDate = Calendar.current.date(byAdding: .day,value: 1, to: currentDate)!
