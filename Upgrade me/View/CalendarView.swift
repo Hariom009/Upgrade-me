@@ -8,65 +8,101 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @State private var selectedDate: Date = Date()
-    private var dateRange:[Date]{
+    @Binding var selectedDate: Date
+    @State private var todaysDate: Date = Date.now
+    @State private var showCalendar: Bool = false
+    @State private var dragOffset: CGFloat = 0
+
+    private var dateRange: [Date] {
         let calendar = Calendar.current
-        let startDate = calendar.date(byAdding: .day, value: -100, to: Date())!
+        let startDate = calendar.date(byAdding: .day, value: -2, to: Date())!
         let endDate = calendar.date(byAdding: .day, value: 30, to: Date())!
-        
         return generateDates(from: startDate, to: endDate)
     }
-    
+
     var body: some View {
-        @State  var selectedDate: Date = Date.now
-      //  let column = Array(repeating: GridItem(.flexible()), count: 7)
-       // let weekdaySymbols = Calendar.current.weekdaySymbols
-        
-        NavigationStack{
-            if selectedDate == .now {
-                Text("Today")
-            }
-                HStack(spacing: 20){
+       
+            VStack(spacing: 0){
+                ZStack {
                     
-                    Text("Date : ")
-                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
+//                    if !showCalendar {
+//                        // Show horizontal picker when graphical calendar is hidden
+//                      //  HorizontalDatePickerView(selectedDate: $selectedDate)
+//                           // .gesture(
+//                                DragGesture()
+//                                    .onChanged { value in
+//                                        if value.translation.height > 30 {
+//                                            withAnimation(.easeInOut) {
+//                                                showCalendar = true
+//                                            }
+//                                        }
+//                                    }
+//                            )
+//                            .transition(.move(edge: .top))
+//                    }
+                    
+                    if showCalendar {
+                        // Show graphical calendar when toggled
+                        DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                            .datePickerStyle(.graphical)
+                            .scaleEffect(0.7)
+                            .frame(width: 380, height: 240)
+                            .background(
+                                RoundedRectangle(cornerRadius: 15)
+                                    .fill(Color.white)
+                                    .shadow(radius: 20)
+                            )
+                            .offset(y: dragOffset)
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        dragOffset = value.translation.height
+                                    }
+                                    .onEnded { value in
+                                        withAnimation(.easeInOut) {
+                                            if value.translation.height < -30 {
+                                                showCalendar = false
+                                            }
+                                            dragOffset = 0
+                                        }
+                                    }
+                            )
+                            .opacity(showCalendar ? 1 : 0)
+                            .offset(y: showCalendar ? 0 : -50)
+                            .animation(.spring(response: 0.35, dampingFraction: 0.75), value: showCalendar)
+                    }
                 }
-                .padding(20)
-        }
+            }
+            .padding(2)
+           //.navigationTitle("\(dateLabel(for: selectedDate))")
     }
-    func generateDates(from startDate:Date, to endDate:Date) -> [Date]{
-        var dates:[Date] = []
+
+    func generateDates(from startDate: Date, to endDate: Date) -> [Date] {
+        var dates: [Date] = []
         var currentDate = startDate
         while currentDate <= endDate {
             dates.append(currentDate)
-            currentDate = Calendar.current.date(byAdding: .day,value: 1, to: currentDate)!
+            currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate)!
         }
         return dates
     }
-    
-    
+
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
         return formatter
     }
-    
+
     private func isSameDay(date: Date) -> Color {
-        let tempdate = Date()
-        let Formatter = DateFormatter()
-        Formatter.dateFormat = "MM dd yyyy"
-        let currentDateString = Formatter.string(from: tempdate)
-        let dateString = Formatter.string(from: date)
-        
-        if currentDateString == dateString {
-            return .black
-        }
-        else {
-            return .gray
-        }
+        let tempDate = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM dd yyyy"
+        let currentDateString = formatter.string(from: tempDate)
+        let dateString = formatter.string(from: date)
+        return currentDateString == dateString ? .black : .gray
     }
 }
 
 #Preview {
-    CalendarView()
+    CalendarView(selectedDate: .constant(Date()))
 }

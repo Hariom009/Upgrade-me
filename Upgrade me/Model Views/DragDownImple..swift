@@ -8,9 +8,35 @@
 import SwiftUI
 
 struct DragDownImple_: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
+    @State private var showDragDown = false
+
+        var body: some View {
+            ZStack {
+                VStack(spacing: 20) {
+                    Text("Main Screen")
+                        .font(.largeTitle)
+
+                    Button("Show DragDownView") {
+                        withAnimation {
+                            showDragDown = true
+                        }
+                    }
+                }
+
+                DragDownView(isPresented: $showDragDown) {
+                    VStack(spacing: 20) {
+                        Text("Hello from the top 👋")
+                            .font(.headline)
+                        
+                        Button("Dismiss") {
+                            withAnimation {
+                                showDragDown = false
+                            }
+                        }
+                    }
+                }
+            }
+        }
 }
 
 #Preview {

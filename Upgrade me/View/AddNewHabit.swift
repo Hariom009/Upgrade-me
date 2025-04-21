@@ -1,5 +1,8 @@
-
 import SwiftUI
+import SwiftData
+import MCEmojiPicker
+import UserNotifications
+
 enum RepeatOption: String, CaseIterable, Identifiable {
     case daily = "Daily"
     case weekends = "Weekends"
@@ -26,351 +29,226 @@ enum ReminderOffset: String, CaseIterable, Identifiable {
     }
 }
 
-struct EditNewHabit: View {
+struct AddNewHabit: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
+    
+    @Query private var activities: [Activity]
     @State var habitName: String = ""
-    @State var time  = Date()
+    @State var time = Date()
     @State var date: Date = Date()
-    @State var tempduration : Int = 0
+    @State var tempduration: Int = 0
     
     @State private var selectedRepeat: RepeatOption = .daily
-    
-    var activitymanager: ActivityManager
-    
-    @State private var isReminderOn = false
     @State private var reminderTime: ReminderOffset = .none
-    
-    @State private var tag: String = ""
+    @State private var tag: String = "No Tag"
     @State private var subtasks = ""
-    let tags = ["Workout", "Study", "Personal", "Health", "Travel", "Shopping"]
+    let tags = ["No Tag","Workout", "Study", "Personal", "Health", "Travel", "Shopping"]
+    
     @State private var selectedColor: Color = Color.green.opacity(0.3)
-    var isValid: Bool{
+    @State private var openEmojiPicker: Bool = false
+    @State private var emoji = ""
+    
+    @State private var notificationManager = LocalNotificationManager()
+    
+    var isValid: Bool {
         !habitName.isEmpty
     }
     
-    // BODY Property ------- HERE----------
-    
     var body: some View {
-        NavigationStack{
-            ZStack{
+        NavigationStack {
+            ZStack {
                 selectedColor
                     .ignoresSafeArea()
-                VStack(spacing: 8){
-                    VStack{
-                    Text(emojiForHabit(habitName))
-                           .font(.largeTitle)
-                           .frame(maxWidth: .infinity, alignment: .center)
-                           .listRowBackground(Color.clear)
-
-                       TextField("New Task", text: $habitName)
-                           .font(.title)
-                           .fontWeight(.bold)
-                           .multilineTextAlignment(.center)
-                           .listRowBackground(Color.clear)
-
-                       if !habitName.isEmpty {
-                           Text("Tap to rename")
-                               .padding(3)
-                               .foregroundStyle(.secondary)
-                               .frame(maxWidth: .infinity, alignment: .center)
-                               .listRowBackground(Color.clear)
-                    }
-                }
-                    
-                    ScrollView(.horizontal){
-                        HStack(spacing: 20) {
-                            // Light Peach
-                             Color(red: 1.0, green: 0.8, blue: 0.7) // Light peach
-                                 .frame(width: 40, height: 40)
-                                 .clipShape(Circle())
-                                 .overlay(
-                                     Circle() // White border circle
-                                         .stroke(Color.white, lineWidth: 2) // White border with thickness
-                                 )
-                                 .overlay(
-                                     Group {
-                                         if selectedColor == Color(red: 1.0, green: 0.8, blue: 0.7) {
-                                             Image(systemName: "checkmark")
-                                                 .foregroundColor(.black) // Tick color
-                                                 .font(.title2) // Tick font size
-                                         }
-                                     }
-                                 )
-                                 .onTapGesture {
-                                     selectedColor = Color(red: 1.0, green: 0.8, blue: 0.7)
-                                 }
-                             
-                             // Light Pink
-                             Color(red: 1.0, green: 0.8, blue: 0.9) // Light pink
-                                 .frame(width: 40, height: 40)
-                                 .clipShape(Circle())
-                                 .overlay(
-                                     Circle() // White border circle
-                                         .stroke(Color.white, lineWidth: 2) // White border with thickness
-                                 )
-                                 .overlay(
-                                     Group {
-                                         if selectedColor == Color(red: 1.0, green: 0.8, blue: 0.9) {
-                                             Image(systemName: "checkmark")
-                                                 .foregroundColor(.black) // Tick color
-                                                 .font(.title2) // Tick font size
-                                         }
-                                     }
-                                 )
-                                 .onTapGesture {
-                                     selectedColor = Color(red: 1.0, green: 0.8, blue: 0.9)
-                                 }
-                             
-                             // Soft Lavender
-                             Color(red: 0.8, green: 0.7, blue: 1.0) // Soft lavender
-                                 .frame(width: 40, height: 40)
-                                 .clipShape(Circle())
-                                 .overlay(
-                                     Circle() // White border circle
-                                         .stroke(Color.white, lineWidth: 2) // White border with thickness
-                                 )
-                                 .overlay(
-                                     Group {
-                                         if selectedColor == Color(red: 0.8, green: 0.7, blue: 1.0) {
-                                             Image(systemName: "checkmark")
-                                                 .foregroundColor(.black) // Tick color
-                                                 .font(.title2) // Tick font size
-                                         }
-                                     }
-                                 )
-                                 .onTapGesture {
-                                     selectedColor = Color(red: 0.8, green: 0.7, blue: 1.0)
-                                 }
-                             
-                             // Mint Green
-                             Color(red: 0.6, green: 1.0, blue: 0.6) // Mint green
-                                 .frame(width: 40, height: 40)
-                                 .clipShape(Circle())
-                                 .overlay(
-                                     Circle() // White border circle
-                                         .stroke(Color.white, lineWidth: 2) // White border with thickness
-                                 )
-                                 .overlay(
-                                     Group {
-                                         if selectedColor == Color(red: 0.6, green: 1.0, blue: 0.6) {
-                                             Image(systemName: "checkmark")
-                                                 .foregroundColor(.black) // Tick color
-                                                 .font(.title2) // Tick font size
-                                         }
-                                     }
-                                 )
-                                 .onTapGesture {
-                                     selectedColor = Color(red: 0.6, green: 1.0, blue: 0.6)
-                                 }
-                             
-                             // Pale Yellow
-                             Color(red: 1.0, green: 1.0, blue: 0.8) // Pale yellow
-                                 .frame(width: 40, height: 40)
-                                 .clipShape(Circle())
-                                 .overlay(
-                                     Circle() // White border circle
-                                         .stroke(Color.white, lineWidth: 2) // White border with thickness
-                                 )
-                                 .overlay(
-                                     Group {
-                                         if selectedColor == Color(red: 1.0, green: 1.0, blue: 0.8) {
-                                             Image(systemName: "checkmark")
-                                                 .foregroundColor(.black) // Tick color
-                                                 .font(.title2) // Tick font size
-                                         }
-                                     }
-                                 )
-                                 .onTapGesture {
-                                     selectedColor = Color(red: 1.0, green: 1.0, blue: 0.8)
-                                 }
-                             
-                             // Soft Coral
-                             Color(red: 1.0, green: 0.6, blue: 0.6) // Soft coral
-                                 .frame(width: 40, height: 40)
-                                 .clipShape(Circle())
-                                 .overlay(
-                                     Circle() // White border circle
-                                         .stroke(Color.white, lineWidth: 2) // White border with thickness
-                                 )
-                                 .overlay(
-                                     Group {
-                                         if selectedColor == Color(red: 1.0, green: 0.6, blue: 0.6) {
-                                             Image(systemName: "checkmark")
-                                                 .foregroundColor(.black) // Tick color
-                                                 .font(.title2) // Tick font size
-                                         }
-                                     }
-                                 )
-                                 .onTapGesture {
-                                     selectedColor = Color(red: 1.0, green: 0.6, blue: 0.6)
-                                 }
-                            // Separate one
-                            Color(red: 1.1, green: 0.5, blue: 0.3) // Soft coral
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle() // White border circle
-                                        .stroke(Color.white, lineWidth: 2) // White border with thickness
-                                )
-                                .overlay(
-                                    Group {
-                                        if selectedColor == Color(red: 1.1, green: 0.5, blue: 0.3) {
-                                            Image(systemName: "checkmark")
-                                                .foregroundColor(.black) // Tick color
-                                                .font(.title2) // Tick font size
-                                        }
-                                    }
-                                )
-                                .onTapGesture {
-                                    selectedColor = Color(red: 1.1, green: 0.5, blue: 0.3)
-                                }
-                        }
-                    }
-            
-                Spacer()
-                VStack(spacing: 8){
-                    HStack(spacing: 12){
-                        Image(systemName: "calendar")
-                        DatePicker("Date",selection: $date,displayedComponents: [.date])
-                            .listRowBackground(Color.white.opacity(0.5))
-                    }
-                    .padding(15)
-                    Divider()
-                        .frame(width: 300,height: 0.5)
-                        .background(Color.gray.opacity(0.5))
-                    
-                    HStack(spacing: 12){
-                        Image(systemName: "clock")
-                        DatePicker("Time", selection: $time, displayedComponents:.hourAndMinute)
-                    }
-                    .padding(15)
-                    Divider()
-                        .frame(width: 300,height: 0.5)
-                        .background(Color.gray.opacity(0.5))
-                    
-                    HStack(spacing: 12){
-                        Image(systemName: "repeat.circle")
-                        Text("Repeat")
-                        Spacer()
-                        Picker("", selection: $selectedRepeat) {
-                            ForEach(RepeatOption.allCases) { option in
-                                Text(option.rawValue).tag(option)
-                            }
-                        }
-                    }
-                    .padding(15)
-                    Divider()
-                        .frame(width: 300,height: 0.5)
-                        .background(Color.gray.opacity(0.5))
-                    
-                    HStack(spacing: 12){
-                        Image(systemName: "clock.fill")
-                        Text("Reminder")
-                        Spacer()
-                        Picker("", selection: $reminderTime){
-                            ForEach(ReminderOffset.allCases) { option in
-                                Text(option.rawValue).tag(option)
-                            }
-                        }
-                    }
-                    .padding(15)
-                    Divider()
-                        .frame(width: 300,height: 0.5)
-                        .background(Color.gray.opacity(0.5))
-                    
-                    HStack(spacing: 12){
-                        Image(systemName: "tag.fill")
-                        Text("Tag")
-                        Spacer()
-                        Picker("", selection: $tag){
-                            ForEach(tags, id:\.self){
-                                Text($0).tag($0)
-                            }
-                        }
-                    }
-                    .padding(15)
-                }
                 
-                .frame(width: 350, height:  400)
-                .background(
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(Color.white.opacity(0.7)) // or any custom color
-                )
-                VStack{
-                    HStack(spacing: 30){
-                            Image(systemName: "plus")
-                                .offset(x:25)
-                            TextField("Subtasks", text:$subtasks)
+                VStack(spacing: 8) {
+                    VStack {
+                        if habitName.isEmpty {
+                            Image("default")
+                                .resizable()
+                                .frame(width: 100, height: 100)
+                                .scaledToFit()
+                        }else{
+                            Image("\(habitName)")
+                                .resizable()
+                                .frame(width: 100, height: 100)
+                                .scaledToFit()
+                        }
+                        
+                        // Here is the Emoji picker to pick any emoji you want to
+//                        Button(emoji.isEmpty ? "🔆" : "") {
+//                            openEmojiPicker.toggle()
+//                        }
+//                        .emojiPicker(isPresented: $openEmojiPicker, selectedEmoji: $emoji)
+                        
+                        TextField("New Task", text: $habitName)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                            .textInputAutocapitalization(.none)
+                        
+                        if !habitName.isEmpty {
+                            Button {
+                                openEmojiPicker.toggle()
+                            } label: {
+                                Text("Tap to Edit")
+                                    .padding(3)
+                                    .font(.caption)
+                                    .foregroundStyle(.black)
+                            }
+                        }
                     }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 15)
-                            .fill(Color.white.opacity(0.7))
-                            .frame(width: 340)
-                          // or any custom color
-                    )
-                }
-              Spacer()
-            }
-                
-                VStack(spacing: 12){
+                    
+                    ColorPaletteView(selectedColor: $selectedColor)
                     Spacer()
                     
-                    Button("Finish"){
-                        let newactivity = Activity(name: habitName, date: date, duration:tempduration)
-                        activitymanager.addActivity(newactivity)
-                        dismiss()
-                    }
-                    .frame(maxWidth: 320,minHeight: 55)
-                    .background(.white)
-                    .foregroundStyle(.black)
-                    .fontWeight(.bold)
-                    .cornerRadius(20)
-                    .padding(.top,20)
+                    formInputs
+                    Spacer()
                 }
-                
-                
             }
-          //  .navigationTitle("Add new Habit")
-          //  .navigationBarTitleDisplayMode(.inline)
-//            .toolbar{
-//                Button{
-//                    let newactivity = Activity(name: habitName, date: date, duration: tempduration)
-//                    activitymanager.addActivity(newactivity)
-//                    dismiss()
-//                }label: {
-//                    Image(systemName: "xmark")
-//                }
-//                .disabled(!isValid)
-//            }
+            .onAppear {
+                notificationManager.requestPermission() // Ask for permission on first open
+            }
+            .toolbar {
+                Button {
+                    let newactivity = Activity(name: habitName, date: date, duration: tempduration, isCompleted: false)
+                    modelContext.insert(newactivity)
+                    
+                    if let combinedDate = combineDateAndTime(date: date, time: time) {
+                        scheduleNotification(for: combinedDate)
+                    }
+                    
+                    dismiss()
+                    dismiss()
+                } label: {
+                    Text("Create")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.black)
+                }
+            }
         }
     }
-    func emojiForHabit(_ name: String) -> String {
-        let lowercased = name.lowercased()
+    
+    // MARK: - Form Inputs
+    var formInputs: some View {
+        VStack(spacing: 3) {
+            NavigationLink(destination: EditDateAddedView(date: $date)) {
+                HStack(spacing: 12) {
+                    Image(systemName: "calendar").fontWeight(.bold)
+                    Text("Date")
+                    Spacer()
+                    Text("\(date.displayDate)")
+                    Image(systemName:"chevron.right")
+                }
+                .foregroundStyle(Color.black)
+                .padding(15)
+            }
+            
+            Divider().frame(width: 300, height: 0.5)
+            
+            HStack(spacing: 12) {
+                Image(systemName: "clock")
+                Text("Time")
+                DatePicker("", selection: $time, displayedComponents: .hourAndMinute)
+            }
+            .padding(15)
+            
+            Divider().frame(width: 300, height: 0.5).background(Color.gray.opacity(0.5))
+            
+            HStack(spacing: 12) {
+                Image(systemName: "repeat.circle").fontWeight(.bold)
+                Text("Repeat")
+                Spacer()
+                Picker("", selection: $selectedRepeat) {
+                    ForEach(RepeatOption.allCases) { option in
+                        Text(option.rawValue).tag(option)
+                    }
+                }
+            }
+            .padding(15)
+            
+            Divider().frame(width: 300, height: 0.5).background(Color.gray.opacity(0.5))
+            
+            HStack(spacing: 12) {
+                Image(systemName: "clock.fill")
+                Text("Reminder")
+                Spacer()
+                Picker("", selection: $reminderTime) {
+                    ForEach(ReminderOffset.allCases) { option in
+                        Text(option.rawValue).tag(option)
+                    }
+                }
+            }
+            .padding(15)
+            
+            Divider().frame(width: 300, height: 0.5).background(Color.gray.opacity(0.5))
+            
+            HStack(spacing: 12) {
+                Image(systemName: "tag.fill").fontWeight(.bold)
+                Text("Tag")
+                Spacer()
+                Picker("", selection: $tag) {
+                    ForEach(tags, id: \.self) {
+                        Text($0).tag($0)
+                    }
+                }
+            }
+            .padding(15)
+        }
+        .frame(width: 350, height:  360)
+        .background(RoundedRectangle(cornerRadius: 15).fill(Color.white.opacity(0.7)))
+    }
+    
+    // MARK: - Combine Date and Time
+    func combineDateAndTime(date: Date, time: Date) -> Date? {
+        let calendar = Calendar.current
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+        let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
         
-        if lowercased.contains("run") || lowercased.contains("jog") {
-            return "🏃‍♂️"
-        } else if lowercased.contains("drink") {
-            return "🥤"
-        } else if lowercased.contains("read") {
-            return "📚"
-        } else if lowercased.contains("code") {
-            return "💻"
-        } else if lowercased.contains("sleep") {
-            return "😴"
-        } else if lowercased.contains("meditate") {
-            return "🧘‍♂️"
-        } else if lowercased.contains("workout") || lowercased.contains("gym") {
-            return "🏋️"
-        } else if lowercased.contains("eat") || lowercased.contains("food") {
-            return "🍽️"
-        } else {
-            return "🌻" // default fallback emoji
+        dateComponents.hour = timeComponents.hour
+        dateComponents.minute = timeComponents.minute
+        
+        return calendar.date(from: dateComponents)
+    }
+    
+    // MARK: - Schedule Notification
+    func scheduleNotification(for baseDate: Date) {
+        var finalDate = baseDate
+        
+        if let offset = reminderTime.offsetInMinutes {
+            finalDate = Calendar.current.date(byAdding: .minute, value: -offset, to: baseDate) ?? baseDate
+        }
+        
+        let calendar = Calendar.current
+        
+        switch selectedRepeat {
+        case .daily:
+            let components = calendar.dateComponents([.hour, .minute], from: finalDate)
+            notificationManager.scheduleNotification(title: "Habit Reminder", body: habitName, dateComponents: components, repeats: true)
+            
+        case .weekends:
+            for weekday in [7, 1] { // Sunday (1), Saturday (7)
+                var components = calendar.dateComponents([.hour, .minute], from: finalDate)
+                components.weekday = weekday
+                notificationManager.scheduleNotification(title: "Weekend Habit Reminder", body: habitName, dateComponents: components, repeats: true)
+            }
+            
+        case .monthly:
+            var components = calendar.dateComponents([.day, .hour, .minute], from: finalDate)
+            notificationManager.scheduleNotification(title: "Monthly Habit Reminder", body: habitName, dateComponents: components, repeats: true)
         }
     }
 }
 
+extension Date {
+    var displayDate: String {
+        self.formatted(.dateTime.day().month(.wide).year())
+    }
+}
+
+
 #Preview {
-    EditNewHabit(activitymanager: ActivityManager())
+    AddNewHabit()
 }
 

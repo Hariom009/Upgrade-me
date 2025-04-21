@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
-
+import SwiftData
 @main
 struct Upgrade_meApp: App {
     var body: some Scene {
         WindowGroup {
+          //  LocalNotificationsView()
             ContentView()
         }
+        .modelContainer(for: [Activity.self])
     }
 }
