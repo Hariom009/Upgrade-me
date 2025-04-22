@@ -1,10 +1,3 @@
-//
-//  CalendarView.swift
-//  Upgrade me
-//
-//  Created by Hari's Mac on 16.04.2025.
-//
-
 import SwiftUI
 
 struct CalendarView: View {
@@ -21,60 +14,42 @@ struct CalendarView: View {
     }
 
     var body: some View {
-       
-            VStack(spacing: 0){
-                ZStack {
-                    
-//                    if !showCalendar {
-//                        // Show horizontal picker when graphical calendar is hidden
-//                      //  HorizontalDatePickerView(selectedDate: $selectedDate)
-//                           // .gesture(
-//                                DragGesture()
-//                                    .onChanged { value in
-//                                        if value.translation.height > 30 {
-//                                            withAnimation(.easeInOut) {
-//                                                showCalendar = true
-//                                            }
-//                                        }
-//                                    }
-//                            )
-//                            .transition(.move(edge: .top))
-//                    }
-                    
-                    if showCalendar {
-                        // Show graphical calendar when toggled
-                        DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                            .datePickerStyle(.graphical)
-                            .scaleEffect(0.7)
-                            .frame(width: 380, height: 240)
-                            .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .fill(Color.white)
-                                    .shadow(radius: 20)
-                            )
-                            .offset(y: dragOffset)
-                            .gesture(
-                                DragGesture()
-                                    .onChanged { value in
-                                        dragOffset = value.translation.height
-                                    }
-                                    .onEnded { value in
-                                        withAnimation(.easeInOut) {
-                                            if value.translation.height < -30 {
-                                                showCalendar = false
-                                            }
-                                            dragOffset = 0
+        
+        VStack(spacing: 0){
+            ZStack {
+                if showCalendar {
+                    // Show graphical calendar when toggled
+                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .scaleEffect(0.7)
+                        .frame(width: 380, height: 240)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.white)
+                                .shadow(radius: 20)
+                        )
+                        .offset(y: dragOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    dragOffset = value.translation.height
+                                }
+                                .onEnded { value in
+                                    withAnimation(.easeInOut) {
+                                        if value.translation.height < -30 {
+                                            showCalendar = false
                                         }
+                                        dragOffset = 0
                                     }
-                            )
-                            .opacity(showCalendar ? 1 : 0)
-                            .offset(y: showCalendar ? 0 : -50)
-                            .animation(.spring(response: 0.35, dampingFraction: 0.75), value: showCalendar)
-                    }
+                                }
+                        )
+                        .opacity(showCalendar ? 1 : 0)
+                        .offset(y: showCalendar ? 0 : -50)
+                        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: showCalendar)
                 }
             }
-            .padding(2)
-           //.navigationTitle("\(dateLabel(for: selectedDate))")
+        }
+        .padding(2)
     }
 
     func generateDates(from startDate: Date, to endDate: Date) -> [Date] {
