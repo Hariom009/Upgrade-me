@@ -9,9 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack{
-            HabitListHomeView()
-                .ignoresSafeArea()
+        NavigationStack(){
+           GuestView()
         }
     }
 }

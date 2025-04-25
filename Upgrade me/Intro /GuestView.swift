@@ -8,45 +8,49 @@
 import SwiftUI
 
 struct GuestView: View {
+   @State private var goToHabitView = false
     @State private var personname: String = ""
-    @State private var movetoHabit: Bool = false
     @State private var isAnimating = true
-    var body: some View {
-        NavigationStack{
-            ZStack{
-                VStack(spacing: 12){
-                    
-                  ImageViewForIntro()
-                        .padding()
-                    
-                    Text("Track Your Habit and Set Goals")
-                        .foregroundStyle(.black)
-                        .font(.system(size: 25, weight: .heavy))
-                        .frame(width: 200,height: 200)
-                        .padding()
 
-                    FooterView
-                        .padding()
-                    
+    var body: some View {
+        ZStack {
+            VStack(spacing: 12) {
+
+                ImageViewForIntro()
+                    .padding()
+
+                Text("Set daily To-Do\nand we'll help you achieve.")
+                    .foregroundStyle(.black)
+                    .font(.system(size: 25, weight: .heavy))
+                    .frame(width: 300, height: 200)
+                    .padding(.top,12)
+
+                Button("Get Started") {
+                   // path.append("habitListHome")
+                    goToHabitView = true
                 }
-                .padding(.top,20)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: 340, minHeight: 60)
+                .background(.green)
+                .foregroundStyle(.black)
+                .fontWeight(.bold)
+                .cornerRadius(12)
+
+                FooterView
             }
+            .padding(.top, 20)
+        }
+        .fullScreenCover(isPresented: $goToHabitView){
+         HabitListHomeView()
+                .ignoresSafeArea()
         }
     }
-    private var FooterView:some View{
+
+    private var FooterView: some View {
         VStack {
-            NavigationLink("Get Started"){
-            //  HorizontalDatePickerView()
-            }
-            .padding(.horizontal, 16)
-            .frame(maxWidth: 340,minHeight: 60)
-            .background(.green)
-            .foregroundStyle(.black)
-            .fontWeight(.bold)
-            .cornerRadius(12)
-            HStack(spacing: 80){
+            HStack(spacing: 80) {
                 Spacer()
-                VStack{
+                VStack {
                     Text("Keep Smiling and")
                         .foregroundStyle(.secondary)
                         .font(.caption)
@@ -56,10 +60,11 @@ struct GuestView: View {
                 }
                 Spacer()
             }
-            .padding(.top,12)
+            .padding(.top, 12)
         }
     }
 }
+
 
 #Preview {
     GuestView()

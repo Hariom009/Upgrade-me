@@ -61,9 +61,9 @@ struct LocalNotificationsView: View {
                 NotifyManager.instance.cancelNotifications()
             }
         }
-        .onAppear{
-            UIApplication.shared.applicationIconBadgeNumber = 0
-        }
+//        .onAppear{
+//            UIApplication.shared.applicationIconBadgeNumber = 0
+//        }
     }
 }
 

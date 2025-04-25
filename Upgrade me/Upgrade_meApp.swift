@@ -9,10 +9,17 @@ import SwiftUI
 import SwiftData
 @main
 struct Upgrade_meApp: App {
+    @StateObject private var alarmManager = AlarmManager.shared
+        
+        init() {
+            // Request permissions on app launch
+            AlarmManager.shared.requestNotificationPermission()
+        }
     var body: some Scene {
         WindowGroup {
           //  LocalNotificationsView()
             ContentView()
+                .environmentObject(alarmManager)
         }
         .modelContainer(for: [Activity.self])
     }

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		BF303B5A2DB38C8B0084197F /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = BF303B592DB38C8B0084197F /* MCEmojiPicker */; };
+		BF6F90062DB8C7A5000454FC /* Upgrade-me-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6F90052DB8C7A5000454FC /* Upgrade-me-Info.plist */; };
+		BF6F90502DB8D23C000454FC /* alarm.wav in Resources */ = {isa = PBXBuildFile; fileRef = BF6F904F2DB8D23C000454FC /* alarm.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,6 +30,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BF6F90052DB8C7A5000454FC /* Upgrade-me-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Upgrade-me-Info.plist"; sourceTree = "<group>"; };
+		BF6F904F2DB8D23C000454FC /* alarm.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = alarm.wav; sourceTree = "<group>"; };
 		BF953EAC2DAFE8B8008CF9E7 /* Upgrade me.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Upgrade me.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF953EB92DAFE8BA008CF9E7 /* Upgrade meTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Upgrade meTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF953EC32DAFE8BA008CF9E7 /* Upgrade meUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Upgrade meUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -80,10 +84,12 @@
 		BF953EA32DAFE8B8008CF9E7 = {
 			isa = PBXGroup;
 			children = (
+				BF6F90052DB8C7A5000454FC /* Upgrade-me-Info.plist */,
 				BF953EAE2DAFE8B8008CF9E7 /* Upgrade me */,
 				BF953EBC2DAFE8BA008CF9E7 /* Upgrade meTests */,
 				BF953EC62DAFE8BA008CF9E7 /* Upgrade meUITests */,
 				BF953EAD2DAFE8B8008CF9E7 /* Products */,
+				BF6F904F2DB8D23C000454FC /* alarm.wav */,
 			);
 			sourceTree = "<group>";
 		};
@@ -221,6 +227,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF6F90062DB8C7A5000454FC /* Upgrade-me-Info.plist in Resources */,
+				BF6F90502DB8D23C000454FC /* alarm.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,6 +417,7 @@
 				DEVELOPMENT_TEAM = 72Q9LQ7MVA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Upgrade-me-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -437,6 +446,7 @@
 				DEVELOPMENT_TEAM = 72Q9LQ7MVA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Upgrade-me-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -6,17 +6,21 @@ class Activity {
     var id: UUID
     var name: String
     var date: Date
-    var duration: Int
+    var duration: Int // this is the streak which we are maintaining 
     var colorName: String
     var isCompleted: Bool
+    var isRescheduled: Bool = false
+    var subtask : String = ""
 
-    init(id: UUID = UUID(), name: String, date: Date, duration: Int, colorName: String = Activity.randomColorName(), isCompleted: Bool = false){
+    init(id: UUID = UUID(), name: String, date: Date, duration: Int, colorName: String = Activity.randomColorName(), isCompleted: Bool = false, isRescheduled: Bool = false, subtask : String = ""){
         self.id = id
         self.name = name
         self.date = date
         self.duration = duration
         self.colorName = colorName // The color is set once when the activity is created
         self.isCompleted = isCompleted
+        self.isRescheduled = isRescheduled // The activity which are not completed previous day
+        self.subtask = subtask // for the subtask below the task 
     }
 
     static func randomColorName() -> String {
