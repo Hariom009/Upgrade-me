@@ -72,7 +72,7 @@ struct ManageTasks: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(activity.color.opacity(0.4))
                     .foregroundColor(.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .clipShape(RoundedRectangle(cornerRadius: 19))
                 }
                 .onDelete(perform: deleteActivity)
             }

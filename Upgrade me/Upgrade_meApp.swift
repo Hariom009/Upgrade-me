@@ -10,7 +10,6 @@ import SwiftData
 @main
 struct Upgrade_meApp: App {
     @StateObject private var alarmManager = AlarmManager.shared
-        
         init() {
             // Request permissions on app launch
             AlarmManager.shared.requestNotificationPermission()

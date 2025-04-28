@@ -2,14 +2,14 @@ import SwiftUI
 import SwiftData
 
 struct HabitListHomeView: View {
-    // Streak variable
-    @AppStorage("streakCount") private var streakCount = 0
-    @AppStorage("lastStreakUpdated") private var lastStreakUpdated: String = ""
     // For rescheduling of task
     @Environment(\.modelContext) private var context
-    @AppStorage("lastCheckedDate") var lastCheckedDate: String = ""
+    @AppStorage("lastStreakUpdateDate") private var lastStreakUpdateDate: String = ""
+    @AppStorage("streakCount") private var storedStreakCount: Int = 0
+    @AppStorage("lastCheckedDate") private var lastCheckedDate: String = ""
 
 
+    @State private var streakCount = 0
 
     @State private var showGraphicalCalendar = false
     @State private var dragOffset: CGFloat = 0
@@ -18,7 +18,8 @@ struct HabitListHomeView: View {
     @State private var showEditHabit = false
     @State private var selectedDate: Date = Date()
     @State private var showBronzeStar: Bool = false
-    @Query var activities :[Activity]
+    @State private var streakView = false
+    @Query var activities : [Activity]
     
 func hasCompletedActivity(on date: Date) -> Bool {
         let calendar = Calendar.current
@@ -26,6 +27,7 @@ func hasCompletedActivity(on date: Date) -> Bool {
             calendar.isDate(activity.date, inSameDayAs: date) && activity.isCompleted
         }
     }
+    
 private var weeks: [[Date]] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -66,22 +68,23 @@ private var weeks: [[Date]] {
                                 .fontWeight(.bold)
                             Spacer()
                             // The Streak Button on Home screen
-                            HStack{
-                                Image(systemName: "flame.fill")
-                                    .foregroundStyle(.orange)
-                                    .font(.title2)
-                            
-                            // Here put the streak variable
-                                Text("\(streakCount)")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
+                            Button{
+                                streakView.toggle()
+                            }label: {
+                                HStack {
+                                    Image(systemName: "flame.fill")
+                                        .foregroundStyle(.orange)
+                                        .font(.title2)
+                                    Text("\(streakCount)")
+                                        .font(.headline)
+                                        .fontWeight(.semibold)
+                                }
+                                .frame(width: 60, height: 30)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .fill(Color.white)
+                                )
                             }
-                            .frame(width:60,height:30)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.white)
-                            )
-                            
                             Menu {
                                 Button {
                                     openManageTasks = true
@@ -195,22 +198,18 @@ private var weeks: [[Date]] {
                                 }
                             }
                     )
-                    //here i am tracking streak
-                    .onChange(of: selectedDate) { _ , _ in
-                        updateStreakIfNeeded()
-                    }
-                    .onAppear {
-                        updateStreakIfNeeded()
-                    }
                 }
                 
                 // List of Habits
                 
-                ListView(selectedDate: $selectedDate, showBronzeStar: $showBronzeStar)
+                ListView(selectedDate: $selectedDate, showBronzeStar: $showBronzeStar, onHabitCompleted: {
+                    checkAndUpdateStreakOnFirstCompletion()
+                })
             }
             // Modifier to update the schdeduled task
             .onAppear {
                 checkAndCarryOverTasksIfNeeded(context: context)
+                checkStreakResetIfNeeded()
             }
             
             
@@ -262,6 +261,9 @@ private var weeks: [[Date]] {
         .sheet(isPresented: $openManageTasks) {
             ManageTasks()
         }
+        .sheet(isPresented: $streakView){
+            StreakExpandView(streakCount: $streakCount)
+        }
     }// body
     
 private func dateLabel(for date: Date) -> String {
@@ -284,31 +286,6 @@ private func dayNumber(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "d"
         return formatter.string(from: date)
-    }
-    private func updateStreakIfNeeded() {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let todayString = formatter.string(from: Date()) // Use actual today's date
-        let selectedDateString = formatter.string(from: selectedDate)
-        
-        // Check if we've already processed today
-        if lastStreakUpdated == todayString {
-            return
-        }
-        
-        // Only update streak when viewing today
-        if selectedDateString == todayString {
-            if hasCompletedActivity(on: selectedDate) {
-                streakCount += 1
-                lastStreakUpdated = todayString
-            } else {
-                // Only reset streak at the end of the day if nothing was completed
-                // You might want to use a timer or notification for this
-                // For now, we'll reset when user checks today with no completions
-                streakCount = 0
-                lastStreakUpdated = todayString
-            }
-        }
     }
     // These are the functions for rescheduling
     
@@ -343,10 +320,41 @@ private func checkAndCarryOverTasksIfNeeded(context: ModelContext) {
             lastCheckedDate = todayString
         }
     }
+    func checkStreakResetIfNeeded() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let todayString = DateFormatter.localizedString(from: today, dateStyle: .short, timeStyle: .none)
+        
+        if todayString != lastCheckedDate{
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+            
+            let completedYesterday = activities.contains { activity in
+                calendar.isDate(activity.date, inSameDayAs: yesterday) && activity.isCompleted
+            }
+            
+            if !completedYesterday {
+                storedStreakCount = 0
+            }
+            
+            lastCheckedDate = todayString
+            streakCount = storedStreakCount
+        }
+    }
+    func checkAndUpdateStreakOnFirstCompletion() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let todayString = DateFormatter.localizedString(from: today, dateStyle: .short, timeStyle: .none)
 
+        // If we haven't updated streak for today yet
+        if todayString != lastStreakUpdateDate {
+            storedStreakCount += 1
+            lastStreakUpdateDate = todayString
+        }
+
+        streakCount = storedStreakCount
+    }
 
 }
-
 extension Date {
     func startOfWeek(using calendar: Calendar = .current) -> Date {
         let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self)

@@ -1,61 +1,100 @@
-//
-//  BottomSheetEditView.swift
-//  Upgrade me
-//
-//  Created by Hari's Mac on 22.04.2025.
-//
-
 import SwiftUI
 
 struct BottomSheetEditView: View {
-    @State private var showEditHabit : Bool = false
-      var activities : [Activity]
+      var activity: Activity
+    @State private var showEditHabit = false
+    
     var body: some View {
-        ZStack{
+        ZStack {
             RoundedRectangle(cornerRadius: 15)
                 .fill(Color.cyan.opacity(0.2))
                 .ignoresSafeArea()
             VStack{
-                HStack{
-                    Image("\(activities[0].name)")
-                        .resizable()
-                        .frame(width: 60,height: 60)
-                    
-                    VStack(alignment: .leading){
-                        Text("\(activities[0].isCompleted ? "Completed" : "Not Completed")")
-                        Text("\(activities[0].name)")
-                    }
-                    
-                    Spacer()
-                    Button{
-                        activities[0].isCompleted.toggle()
-                    }label:{
-                        Image(systemName:activities[0].isCompleted ? "checkmark.seal.fill" : "circle")
-                            .font(.title2)
-                            .foregroundStyle(activities[0].isCompleted ? .green : .black)
-                        }
-                    }
-                Spacer()
-                Button("EditTask"){
-                   showEditHabit = true
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white.opacity(0.6))
-                )
-                .foregroundStyle(.black)
+            VStack(alignment: .leading, spacing: 20) {
                 
+                // Top section
+                HStack {
+                    Image(activity.name.isEmpty ? "defaultImage" : activity.name)
+                        .resizable()
+                        .frame(width: 60, height: 60)
+                    
+                    VStack(alignment: .leading) {
+                        Text(activity.isCompleted ? "Completed" : "Not Completed")
+                            .font(.headline)
+                        Text(activity.name)
+                            .font(.title3)
+                    }
+                }.padding()
+                
+                Divider()
+                
+                // Subtasks section
+                if !activity.subtasks.isEmpty{
+                        VStack(spacing: 10) {
+                            ForEach(activity.subtasks, id: \.self) { task in
+                                HStack{
+                                    Text(task.name)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white.opacity(0.7))
+                                        )
+                                    Spacer()
+                                    Button{
+                                        task.isCompleted.toggle()
+                                    }label: {
+                                        Image(systemName: task.isCompleted ? "checkmark.seal.fill" : "circle")
+                                            .font(.title2)
+                                            .foregroundStyle(task.isCompleted ? .green : .black)
+                                    }
+                                }
+                            }
+                        }
+                }else{
+                    Text("No Subtask")
+                }
+                
+               // Spacer()
             }
-                .padding()
+            .sheet(isPresented: $showEditHabit) {
+                AddNewHabit(
+                    habitName: activity.name,
+            // You must match what AddNewHabit expects!
+                )
             }
-          .sheet(isPresented: $showEditHabit){
-              AddNewHabit(habitName: activities[0].name)
-          }
+            Spacer()
+                VStack{
+                    // Edit button
+                    Button("Edit Task") {
+                        showEditHabit = true
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white.opacity(0.6))
+                    )
+                    .foregroundStyle(.black)
+                    .padding()
+                }
+            }
         }
     }
+}
 
+// Preview
 #Preview {
-    BottomSheetEditView(activities: [Activity(name: "Preview", date: Date.now, duration: 0, isCompleted: false)])
+    let sampleActivity = Activity(
+        name: "Sample Habit",
+        date: .now,
+        duration: 30,
+        isCompleted: false,
+        subtasks: [
+        Subtask(name: "Drink water", isCompleted: false),
+        Subtask(name: "Meditate", isCompleted: false)
+        ]
+    )
+    
+    BottomSheetEditView(activity: sampleActivity)
 }

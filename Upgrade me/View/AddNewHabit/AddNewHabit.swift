@@ -1,34 +1,7 @@
 import SwiftUI
 import SwiftData
-import MCEmojiPicker
 import UserNotifications
 
-enum RepeatOption: String, CaseIterable, Identifiable {
-    case noRepeat = "No Repeat"
-    case daily = "Daily"
-    case weekends = "Weekends"
-    case monthly = "Monthly"
-    
-    var id: String { self.rawValue }
-}
-
-enum ReminderOffset: String, CaseIterable, Identifiable {
-    case none = "On time"
-    case tenMinutes = "10 minutes early"
-    case thirtyMinutes = "30 minutes early"
-    case oneHour = "1 hour early"
-    
-    var id: String { self.rawValue }
-    
-    var offsetInMinutes: Int? {
-        switch self {
-        case .none: return 0
-        case .tenMinutes: return 10
-        case .thirtyMinutes: return 30
-        case .oneHour: return 60
-        }
-    }
-}
 
 struct AddNewHabit: View {
     @Environment(\.dismiss) var dismiss
@@ -38,12 +11,11 @@ struct AddNewHabit: View {
     @EnvironmentObject var alarmManager: AlarmManager
     
     @State var habitName: String = ""
-    
     // Time for habit to start and end in edittimeview
-    @State var time = Date()
+    @State private var time: Date = Date().addingTimeInterval(15 * 60)
     @State var endTime = Date()
     @State private var showEditTime = false
-    @State private var showTimePicker = false
+    @State private var showTimePicker = true
     @State private var periodTime = false
     
     // For alarm notification
@@ -52,17 +24,17 @@ struct AddNewHabit: View {
     @State var date: Date = Date()
     @State var tempduration: Int = 0
     
-    @State private var selectedRepeat: RepeatOption = .noRepeat
+    @State private var selectedRepeat: RepeatOption = .NoRepeat
+    @State private var showRepeatPicker: Bool = false
     @State private var reminderTime: ReminderOffset = .none
     @State private var reminderType: String = "Notification"
     // For Subtask
-    @State private var subtasks = ""
+    @State private var subtaskName: String = ""  // To capture user input for subtask
+    @State private var subtasks: [Subtask] = []
     // For reminder type
     let ReminderType = ["No reminder", "Notification", "Alarm"]
     
     @State private var selectedColor: Color = Color.green.opacity(0.3)
-    @State private var openEmojiPicker: Bool = false
-    @State private var emoji = ""
     
     @State private var notificationManager = LocalNotificationManager()
     
@@ -70,7 +42,7 @@ struct AddNewHabit: View {
         !habitName.isEmpty
     }
     
-    var body: some View {
+var body: some View {
         NavigationStack {
             ZStack {
                 selectedColor
@@ -94,17 +66,6 @@ struct AddNewHabit: View {
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                             .textInputAutocapitalization(.none)
-                        
-                        if !habitName.isEmpty {
-                            Button {
-                                openEmojiPicker.toggle()
-                            } label: {
-                                Text("Tap to Edit")
-                                    .padding(3)
-                                    .font(.caption)
-                                    .foregroundStyle(.black)
-                            }
-                        }
                     }
                     
                     ColorPaletteView(selectedColor: $selectedColor)
@@ -112,6 +73,36 @@ struct AddNewHabit: View {
                     // The Input View
                     
                     formInputs
+                    
+                        // Subtask
+                    VStack(spacing: 8) {
+                        // Show existing subtasks
+                        ForEach(subtasks, id: \.id) { subtask in
+                            HStack {
+                                Text(subtask.name)
+                                    .font(.subheadline)
+                                    .foregroundColor(.black)
+                                    .padding()
+                            }
+                            .padding(10)
+                            .frame(width: 360, height: 40)
+                            .background(RoundedRectangle(cornerRadius: 15).fill(Color.white.opacity(0.7)))
+                            
+                        }
+                        
+                        // TextField to add new subtasks
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus")
+                            TextField("Subtask", text: $subtaskName)
+                                .onSubmit {
+                                    addSubtask()
+                                }
+                        }
+                        .padding(12)
+                        .frame(width: 360, height: 50)
+                        .background(RoundedRectangle(cornerRadius: 15).fill(Color.white.opacity(0.7)))
+                    }
+
                     Spacer()
                 }
             }
@@ -120,8 +111,10 @@ struct AddNewHabit: View {
             }
             .toolbar {
                 Button {
-                    let newactivity = Activity(name: habitName, date: date, duration: tempduration, isCompleted: false)
+                    let newactivity = Activity(name: habitName, date: date, duration: tempduration, isCompleted: false, subtasks: subtasks)
+                    
                        modelContext.insert(newactivity)
+                    
                     if let combinedDate = combineDateAndTime(date: date, time: time) {
                         if reminderType == "Alarm"{
                             scheduleAlarm(for: combinedDate)
@@ -144,7 +137,7 @@ struct AddNewHabit: View {
     }
     
     // MARK: - Form Inputs
-    var formInputs: some View {
+var formInputs: some View {
         VStack(spacing: 3) {
             NavigationLink(destination: EditDateAddedView(date: $date)) {
                 HStack(spacing: 12) {
@@ -164,16 +157,13 @@ struct AddNewHabit: View {
                 Image(systemName: "clock")
                 Text("Time")
                 Spacer()
-                if !showTimePicker{
-                    Text("Anytime")
-                }else{
+           
                     if periodTime{
                         Text("\(time.formatted(date: .omitted, time: .shortened)) - \(endTime.formatted(date: .omitted, time: .shortened))")
                     }
                     else{
                         Text("\(time.formatted(date: .omitted, time: .shortened))")
                     }
-                }
                 Button{
                     withAnimation{
                         showEditTime.toggle()
@@ -191,10 +181,12 @@ struct AddNewHabit: View {
                 Image(systemName: "repeat.circle").fontWeight(.bold)
                 Text("Repeat")
                 Spacer()
-                Picker("", selection: $selectedRepeat) {
-                    ForEach(RepeatOption.allCases) { option in
-                        Text(option.rawValue).tag(option)
-                    }
+                Text("\(selectedRepeat)")
+                Button{
+                    showRepeatPicker.toggle()
+                }label: {
+                  Image(systemName: "chevron.right")
+                        .foregroundStyle(.black)
                 }
             }
             .padding(15)
@@ -224,24 +216,18 @@ struct AddNewHabit: View {
                 }
             }
             .padding(15)
-            Divider().frame(width: 300, height: 0.5).background(Color.gray.opacity(0.5))
-        
-            // Subtask
-            HStack(spacing: 2) {
-                Image(systemName: "plus")
-                Spacer()
-                TextField("Subtask", text: $subtasks)
-            }
-            .padding(15)
-           
         }
-        .frame(width: 350, height:  390)
+        .frame(width: 360, height:  340)
         .background(RoundedRectangle(cornerRadius: 15).fill(Color.white.opacity(0.7)))
         .sheet(isPresented: $showEditTime){
             EditTimeView(time1: $time, time2: $endTime, showTimePicker: $showTimePicker, periodTime : $periodTime)
         }
+        .sheet(isPresented: $showRepeatPicker){
+            RepeatBottomSelect(selectedRepeat: $selectedRepeat, endDate: $date)
+            .presentationDetents([.fraction(0.5), .medium])
+            .presentationDragIndicator(.hidden)
+        }
     }
-    
     // MARK: - Combine Date and Time
     func combineDateAndTime(date: Date, time: Date) -> Date? {
         let calendar = Calendar.current
@@ -265,7 +251,7 @@ struct AddNewHabit: View {
         let calendar = Calendar.current
         
         switch selectedRepeat {
-        case .noRepeat:
+        case .NoRepeat:
             let components = calendar.dateComponents([.hour, .minute], from: finalDate)
             notificationManager.scheduleNotification(title: "Habit Reminder", body: habitName, dateComponents: components, repeats: false)
             
@@ -301,7 +287,7 @@ struct AddNewHabit: View {
         let message = habitName
 
         switch selectedRepeat {
-        case .noRepeat:
+        case .NoRepeat:
             AlarmManager.shared.scheduleAlarm(at: finalDate, title: title, message: message)
             
         case .daily:
@@ -329,6 +315,13 @@ struct AddNewHabit: View {
         }
     }
 
+    // Add Subtask
+    func addSubtask() {
+        guard !subtaskName.isEmpty else { return }
+        let newSubtask = Subtask(name: subtaskName, isCompleted: false)
+        subtasks.append(newSubtask)
+        subtaskName = "" // Clear the field
+    }
 }
 
 extension Date {
@@ -336,7 +329,6 @@ extension Date {
         self.formatted(.dateTime.day().month(.wide).year())
     }
 }
-
 
 #Preview {
     AddNewHabit()

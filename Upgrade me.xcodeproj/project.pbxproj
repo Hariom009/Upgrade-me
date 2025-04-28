@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BF303B5A2DB38C8B0084197F /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = BF303B592DB38C8B0084197F /* MCEmojiPicker */; };
 		BF6F90062DB8C7A5000454FC /* Upgrade-me-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6F90052DB8C7A5000454FC /* Upgrade-me-Info.plist */; };
 		BF6F90502DB8D23C000454FC /* alarm.wav in Resources */ = {isa = PBXBuildFile; fileRef = BF6F904F2DB8D23C000454FC /* alarm.wav */; };
 /* End PBXBuildFile section */
@@ -60,7 +59,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF303B5A2DB38C8B0084197F /* MCEmojiPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,7 +121,6 @@
 			);
 			name = "Upgrade me";
 			packageProductDependencies = (
-				BF303B592DB38C8B0084197F /* MCEmojiPicker */,
 			);
 			productName = "Upgrade me";
 			productReference = BF953EAC2DAFE8B8008CF9E7 /* Upgrade me.app */;
@@ -208,7 +205,6 @@
 			mainGroup = BF953EA32DAFE8B8008CF9E7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BF303B582DB38C8B0084197F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BF953EAD2DAFE8B8008CF9E7 /* Products */;
@@ -577,25 +573,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		BF303B582DB38C8B0084197F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/izyumkin/MCEmojiPicker";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		BF303B592DB38C8B0084197F /* MCEmojiPicker */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BF303B582DB38C8B0084197F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
-			productName = MCEmojiPicker;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BF953EA42DAFE8B8008CF9E7 /* Project object */;
 }

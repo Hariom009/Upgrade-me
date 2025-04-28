@@ -14,36 +14,19 @@ struct ListView: View {
     
     @Binding var selectedDate: Date
     @Binding var showBronzeStar: Bool
+    var onHabitCompleted: (() -> Void)? = nil
+    
     @Query var activities: [Activity]
     @State private var openAddHabit = false
+    @State private var passtheIDofHabit: UUID? = nil
     @State private var selectedHabitName : String = ""
     // for animation when click the task
     @State private var pressedTaskID: UUID? = nil
-
-    
-
     
     var filteredActivities: [Activity] {
         activities.filter {
             Calendar.current.isDate($0.date, inSameDayAs: selectedDate)
         }
-    }
-    private var weeks: [[Date]] {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let startDate = calendar.date(byAdding: .weekOfYear, value: -2, to: today.startOfWeek())!
-        let endDate = calendar.date(byAdding: .weekOfYear, value: 4, to: today.startOfWeek())!
-
-        var weekDates: [[Date]] = []
-        var currentDate = startDate
-
-        while currentDate <= endDate {
-            let week = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: currentDate) }
-            weekDates.append(week)
-            currentDate = calendar.date(byAdding: .weekOfYear, value: 1, to: currentDate)!
-        }
-
-        return weekDates
     }
     
     var body: some View {
@@ -68,71 +51,79 @@ struct ListView: View {
                     }
                     .padding()
                 }
-                List {
+                List{
                     Section{
-                            ForEach(filteredActivities, id: \.id) { activity in
-                                HStack {
-                                    Image(activity.name.isEmpty ? "defaultImage" : activity.name)
-                                        .resizable()
-                                        .frame(width: 30, height: 30)
-                                    VStack(alignment: .leading){
-                                        if activity.isRescheduled {
-                                            Text("Missed from yesterday")
-                                                .font(.caption)
-                                                .foregroundColor(.red)
-                                                .italic()
-                                        }
-                                            else{
-                                                  Text("\(activity.date.displayTime)")
-                                                     .font(.system(size: 12))
-                                                     .strikethrough(activity.isCompleted,pattern: .solid, color: .black)
-                                            }
-                                        
-                                        if !activity.isCompleted{
-                                            Text(activity.name)
-                                                .fontWeight(.semibold)
-                                                .font(.system(size: 15))
-                                        }
-                                        else{
-                                                Text(activity.name)
-                                                    .fontWeight(.semibold)
-                                                    .font(.system(size: 15))
-                                                    .strikethrough(activity.isCompleted,pattern: .solid, color: .black)
+                        ForEach(filteredActivities, id: \.id) { activity in
+                            HStack {
+                                Image(activity.name.isEmpty ? "defaultImage" : activity.name)
+                                    .resizable()
+                                    .frame(width: 30, height: 30)
+                                VStack(alignment: .leading){
+                                    if activity.isRescheduled{
+                                        Text("Missed from yesterday")
+                                            .font(.caption)
+                                            .foregroundColor(.red)
+                                            .italic()
+                                    }
+                                    else{
+                                        if !activity.subtasks.isEmpty{
+                                            Text("\(activity.subtasks.count) subtasks ")
+                                                .font(.system(size: 12))
+                                                
+                                        }else{
+                                            Text("\(activity.date.displayTime)")
+                                                .font(.system(size: 12))
+                                                .strikethrough(activity.isCompleted,pattern: .solid, color: .black)
                                         }
                                     }
-                                    Spacer()
-                                    Button(action: {
-                                        toggleCompleted(for: activity)
-                                    }) {
-                                        Image(systemName: activity.isCompleted ? "checkmark.seal.fill" : "circle")
-                                            .foregroundColor(activity.isCompleted ? .green : .gray)
-                                            .font(.title)
-                                    }.buttonStyle(.borderless)
-                                   
+                                    
+                                    if !activity.isCompleted{
+                                        Text(activity.name)
+                                            .fontWeight(.semibold)
+                                            .font(.system(size: 15))
+                                    }
+                                    else{
+                                        Text(activity.name)
+                                            .fontWeight(.semibold)
+                                            .font(.system(size: 15))
+                                            .strikethrough(activity.isCompleted,pattern: .solid, color: .black)
+                                    }
                                 }
-                                .padding(22)
-                                .background(activity.color.opacity(0.2))
-                                .foregroundColor(.black)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                Spacer()
+                                Button(action: {
+                                    toggleCompleted(for: activity)
+                                    onHabitCompleted?()
+                                }) {
+                                    Image(systemName: activity.isCompleted ? "checkmark.seal.fill" : "circle")
+                                        .foregroundColor(activity.isCompleted ? .green : .gray)
+                                        .font(.title)
+                                }.buttonStyle(.borderless)
                                 
-                                // Animation after onLong Press
-                                .contentShape(Rectangle())
-                                .scaleEffect(pressedTaskID == activity.id ? 0.95 : 1.0)
-                                .animation(.easeInOut(duration: 0.2), value: pressedTaskID == activity.id)
-                                .onLongPressGesture {
-                                        pressedTaskID = activity.id
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                                            openAddHabit = true
-                                            selectedHabitName = activity.name
-                                            pressedTaskID = nil
-                                        }
+                            }
+                            .padding(22)
+                            .background(activity.color.opacity(0.2))
+                            .foregroundColor(.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            
+                            // Animation after onLong Press
+                            .contentShape(Rectangle())
+                            .scaleEffect(pressedTaskID == activity.id ? 0.95 : 1.0)
+                            .animation(.easeInOut(duration: 0.2), value: pressedTaskID == activity.id)
+                            .onLongPressGesture {
+                                pressedTaskID = activity.id
+                                passtheIDofHabit = activity.id
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                    openAddHabit = true
+                                    selectedHabitName = activity.name
+                                    pressedTaskID = nil
                                 }
-                            }// HStack of the list instance
+                            }
+                        }// HStack of the list instance
                         // Modifiers to perform on the overall instance at once
                         
-                            .onDelete(perform: deleteActivity)
+                        .onDelete(perform: deleteActivity)
                         
-                        }// Section of the lists
+                    }// Section of the lists
                     
                 }// List
                 
@@ -157,21 +148,24 @@ struct ListView: View {
             .sheet(isPresented: $showEditHabit) {
                 PreloadedTaskView()
             }
-            .sheet(isPresented: $openAddHabit){
-                BottomSheetEditView(activities: activities)
-                    .presentationDetents([.fraction(0.3), .medium])
-                    .presentationDragIndicator(.hidden)
-            }
-        }// NavigationStack
-}
-
+            .sheet(isPresented: $openAddHabit) {
+                if let selectedActivity = activities.first(where: { $0.id == passtheIDofHabit }) {
+                    BottomSheetEditView(activity: selectedActivity)
+                        .presentationDetents([.fraction(0.4), .medium])
+                        .presentationDragIndicator(.hidden)
+                } else {
+                    Text("Activity not found.")
+                }
+            }        }// NavigationStack
+    }
+    
     private func toggleCompleted(for activity: Activity) {
-        activity.isCompleted.toggle()
+        activity.isCompleted = true
         try? modelContext.save()
         // After toggling, check if any activities are completed
         showBronzeStar = activities.contains { $0.isCompleted }
     }
-
+    
     private func deleteActivity(at offsets: IndexSet) {
         for index in offsets {
             let activity = activities[index]

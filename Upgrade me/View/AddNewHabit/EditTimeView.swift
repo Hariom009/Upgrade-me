@@ -91,5 +91,5 @@ struct EditTimeView: View {
 }
 
 #Preview {
-    EditTimeView(time1: .constant(Date()), time2: .constant(Date()), showTimePicker: .constant(false) , periodTime: .constant(false))
+    EditTimeView(time1: .constant(Date()), time2: .constant(Date()), showTimePicker: .constant(true) , periodTime: .constant(false))
 }
